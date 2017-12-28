@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>时间戳</title>
+    <script src="vue.js"></script>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+    }
+    body{
+        width: 100%;
+        height: 100%;
+        list-style: none;
+        font-family: "幼圆";
+    }
+    #app{
+        width:600px;
+        height: 100%;
+        margin: auto;
+        position: relative;
+    }
+    .input{
+        width:600px;
+        height:50px;
+        margin: 50px auto 20px;
+        display: block;
+        font-size: 15px;
+        padding-left:10px;
+        /*box-shadow: 0 0 2px 3px #2AACE6;*/
+    }
+    .content{
+        width:100%;
+        height:30px;
+        margin-bottom: 5px;
+    }
+    input[type="button"]{
+        float: right;
+        background: pink;
+        margin-right: 5px;
+        padding: 5px;
+        outline: none;
+        border: none;
+    }
+    .do{
+        display: block;
+        list-style: none;
+        overflow: hidden;
+    }
+    .do>li{
+        height: 25px;
+        line-height: 25px;
+        border-bottom: 1px solid #292929;
+        margin: 8px;
+    }
+    .radio{
+        width:10px;
+        height:10px;
+        border-radius: 50%;
+        border: 1px solid #000;
+        float: left;
+        margin-top: 6px;
+        margin-right: 10px;
+    }
+    .do>li>span{
+        display: block;
+        float: right;
+    }
+    .blue{
+        background: #00a5e5;
+        border: none;
+    }
+    .red{
+        color: red;
+    }
+
+</style>
+<body>
+   <div id="app">
+       <input type="text" v-model="con" class="input" @keyup.13="stat()" v-focus placeholder="请输入数据">
+       <div class="content">
+           <input type="button" value="全部" @click="changestatus('all')" :class={red:status=='all'}>
+           <input type="button" value="已完成" @click="changestatus('1')" :class={red:status=='1'}>
+           <input type="button" value="未完成" @click="changestatus('0')" :class={red:status=='0'}>
+       </div>
+       <ul class="do" v-show="all.length>0">
+           <li v-for="item in datas">
+               <div class="radio" :class="{blue:item.status==1}" @click="checked(item) "></div>
+               <div style="width: 90%;float: left;display: block" @dblclick="edit(item)" v-if="item.edit">{{item.title}}</div>
+               <input type="text" style="width: 90%;padding: 0px;border: none" v-model="item.title" v-else="@blur(item.title)">
+               <span @click="del(item.id)">删除</span>
+           </li>
+       </ul>
+       <div class="tishi" v-show="all.length==0">没有数据</div>
+   </div>
+</body>
+<script>
+    // 注册一个全局自定义指令 `v-focus`
+    Vue.directive('focus', {
+        // 当被绑定的元素插入到 DOM 中时……
+        inserted: function (el) {
+            // 聚焦元素
+            el.focus()
+        }
+    })
+    new Vue({
+        el:"#app",
+        data:{
+            con:"",
+            all:localStorage.toDo ? JSON.parse(localStorage.toDo) : [],
+            status:'all',
+        },
+        computed:{
+            datas(){
+                return this.all.filter(ele=>{
+                    if(this.status=='all'){
+                        return ele;
+                    }else{
+                        return this.status==ele.status;
+                    }
+                })
+            },
+        },
+        methods:{
+            stat(){
+                if(this.con.length==0){
+                    alert('请输入数据');
+                    return;
+                }
+                let obj={};
+                obj.title=this.con;
+                obj.id=Math.random()+new Date().getTime()
+                obj.status=0;   //标记每个事项的初始状态
+                obj.edit=true;
+                this.all.push(obj);
+                this.con='';
+                localStorage.toDo=JSON.stringify(this.all)
+            },
+            changestatus(val){
+                this.status=val;
+            },
+            del(id){
+                this.all=this.all.filter(ele=>{
+                    return ele.id!=id;
+                })
+                localStorage.toDo=JSON.stringify(this.all)
+            },
+            checked(obj){
+                if(obj.status=='0'){
+                    obj.status='1';
+                }else{
+                    obj.status='0';
+                }
+                localStorage.toDo=JSON.stringify(this.all)
+            },
+            edit(obj){
+                console.log(5)
+                if(obj.edit == true){
+                    obj.edit = false;
+                }else{
+                    obj.edit = true;
+                }
+                localStorage.toDo = JSON.stringify(this.all)
+            }
+        }
+    })
+</script>
+</html>
